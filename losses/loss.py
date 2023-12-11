@@ -5,6 +5,8 @@ from kornia.filters import canny
     
 
 class FourDomainLoss(nn.Module):
+    """Frequency Domain Loss.
+    """
     def __init__(self):
         super().__init__()
 
@@ -16,7 +18,7 @@ class FourDomainLoss(nn.Module):
     
 
 class EdgeLoss(nn.Module):
-    """
+    """Edge Details Loss.
     """
     def __init__(self):
         super().__init__()
