@@ -11,4 +11,7 @@ The proposed network mainly consists of attention down-sampling module (ADM), hi
 ## Results
 
 Table 1. The evaluations of different methods on four reference-based datasets in terms of average PSNR and SSIM values. The top three indicator values are marked in red (first), blue (second) and green (third), respectively.
-![](./figures/ref-based_quantitative_results.png)
+![reference-based quantitative results](./figures/ref-based_quantitative_results.png)
+
+Table 2. The evaluations of different methods on four reference-free datasets in terms of average URanker, UCIQE and UIQM values. The top three indicator values are marked in red (first), blue (second) and green (third), respectively.
+![referce-free quantitative results](./figures/ref-free_quantitative_results.png)
