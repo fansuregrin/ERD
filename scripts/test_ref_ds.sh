@@ -19,7 +19,7 @@ then
     echo -e "3) name"
     echo -e "4) epoch"
     echo -e "5) load_prefix"
-    echo -e "for example: \"${BOLD_GREEN}bash ${0} uie configs/network/erd_15blocks_2down.yaml LSUI_01 299 weights${ENDSTYLE}\""
+    echo -e "for example: \"${BOLD_GREEN}bash ${0} uie configs/network/erd_15blocks_2down.yaml erd_pretrained 299 weights${ENDSTYLE}\""
     exit -1
 fi
 model_v=${1}
