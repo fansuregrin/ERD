@@ -1,12 +1,12 @@
 from typing import Dict, Any
 
-from .ranet import RANet
+from .erd import ERDNet
 
 
 def create_network(cfg: Dict[str, Any]):
     name = cfg['name']
-    if name == 'ra':
-        net = RANet(
+    if name == 'erd':
+        net = ERDNet(
             cfg['input_nc'], cfg['output_nc'],
             cfg['n_blocks'], cfg['n_down'],
             ngf = cfg['ngf'],

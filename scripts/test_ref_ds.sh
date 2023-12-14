@@ -17,7 +17,7 @@ then
     echo -e "2) net_cfg"
     echo -e "3) name"
     echo -e "4) epoch"
-    echo -e "for example: ${BOLD}bash ${0} ie configs/network/ra_9blocks_2down.yaml LSUI_01 299${ENDSTYLE}"
+    echo -e "for example: ${BOLD}bash ${0} ie configs/network/ra_15blocks_2down.yaml LSUI_01 299${ENDSTYLE}"
     exit -1
 fi
 model_v=${1}

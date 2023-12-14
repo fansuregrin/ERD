@@ -17,7 +17,7 @@ from utils import (
 # Command-line options and arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--ds_cfg", type=str, default="configs/dataset/lsui.yaml")
-parser.add_argument("--net_cfg", type=str, default="configs/network/ra_15blocks_2down.yaml")
+parser.add_argument("--net_cfg", type=str, default="configs/network/erd_15blocks_2down.yaml")
 parser.add_argument("--name", type=str, default="experiment", help="name of training process")
 parser.add_argument('--test_name', type=str, help='name for test dataset')
 parser.add_argument('--checkpoint_dir', type=str, default='checkpoints', help='path to checkpoint dir')

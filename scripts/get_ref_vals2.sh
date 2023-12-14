@@ -16,7 +16,7 @@ then
     echo -e "2) net"
     echo -e "3) name"
     echo -e "4) epoch"
-    echo -e "for example: ${BOLD}bash ${0} ie ra LSUI_01 299${ENDSTYLE}"
+    echo -e "for example: ${BOLD}bash ${0} ie erd LSUI_01 299${ENDSTYLE}"
     exit -1
 fi
 model_v=${1}

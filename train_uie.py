@@ -21,7 +21,7 @@ from utils import (
 parser = argparse.ArgumentParser()
 parser.add_argument("--ds_cfg", type=str, default="configs/dataset/lsui.yaml")
 parser.add_argument("--lr_scheduler_cfg", type=str, default="configs/lr_scheduler/step_lr_03.yaml")
-parser.add_argument("--net_cfg", type=str, default="configs/network/ra_15blocks_2down.yaml")
+parser.add_argument("--net_cfg", type=str, default="configs/network/erd_15blocks_2down.yaml")
 parser.add_argument("--name", type=str, default="experiment", help="name of training process")
 parser.add_argument("--start_epoch", type=int, default=0, help="which epoch to start from")
 parser.add_argument("--start_iteration", type=int, default=0, help="which iteration to start from")

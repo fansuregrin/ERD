@@ -5,8 +5,8 @@ from .cbam import CBAMBlock
 from .resnet import ResnetBlock
 
 
-class RANet(nn.Module):
-    """Residual and Attention-driven Network.
+class ERDNet(nn.Module):
+    """Encoder-Residual-Decoder Network.
     """
     def __init__(self,
                  input_nc: int,
@@ -19,7 +19,7 @@ class RANet(nn.Module):
                  use_att_down: bool = True,
                  use_att_up: bool = False,
                  norm_layer=nn.InstanceNorm2d):
-        """Initializes the RANet.
+        """Initializes the ERD-Net.
 
         Args:
             input_nc: Number of channels of input images.
