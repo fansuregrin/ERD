@@ -1,24 +1,27 @@
 GREEN="\e[32m"
 RED="\e[31m"
 BOLD="\e[1m"
+BOLD_GREEN="\e[1;32m"
 ENDSTYLE="\e[0m"
 
 ds_names=(U45 RUIE_Color90 UPoor200 UW2023)
 
-if [ $# -lt 4 ]
+if [ $# -lt 5 ]
 then
     echo -e "${RED}PLEASE PASS IN THE FOLLOWING ARGUMENTS IN ORDER!${ENDSTYLE}"
     echo -e "1) model_v"
     echo -e "2) net"
     echo -e "3) name"
     echo -e "4) epoch"
-    echo -e "for example: ${BOLD}bash ${0} ie erd LSUI_01 299${ENDSTYLE}"
+    echo -e "5) load_prefix"
+    echo -e "for example: \"${BOLD_GREEN}bash ${0} ie erd LSUI_01 299 weights${ENDSTYLE}\""
     exit -1
 fi
 model_v=${1}
 net=${2}
 name=${3}
 epoch=${4}
+load_prefix=${5}
 
 echo -e "non-reference eval of [${GREEN}${model_v}/${net}/${name}/epoch_${epoch}${ENDSTYLE}]"
 echo "=================================================================="
