@@ -30,10 +30,13 @@ class UWImgEnhanceModel(BaseModel):
     def __init__(self, cfg: Dict):
         super().__init__(cfg)
         if self.mode == 'train':
+            os.makedirs(os.path.join(self.checkpoint_dir, 'network'), exist_ok=True)
             # Set optimizers
             self._set_optimizer()
+            os.makedirs(os.path.join(self.checkpoint_dir, 'optimizer'), exist_ok=True)
             # Set lr_scheduler
             self._set_lr_scheduler()
+            os.makedirs(os.path.join(self.checkpoint_dir, 'lr_scheduler'), exist_ok=True)
             # Set Loss function
             self._set_loss_fn()
             self.train_loss = {}
@@ -43,14 +46,29 @@ class UWImgEnhanceModel(BaseModel):
         elif self.mode == 'test':
             self.checkpoint_dir = cfg['checkpoint_dir']
             self.result_dir = cfg['result_dir']
-            self.niqe = pyiqa.create_metric('niqe', device=self.device)
         
-    def load_weights(self, weights_name: str):
-        weights_path = os.path.join(self.checkpoint_dir, weights_name)
-        self.network.load_state_dict(torch.load(weights_path))
+    def load_network_state(self, state_name: str):
+        state_path = os.path.join(self.checkpoint_dir, 'network', state_name)
+        self.network.load_state_dict(torch.load(state_path))
         if self.logger:
-            self.logger.info('Loaded model weights from {}.'.format(
-                weights_path
+            self.logger.info('Loaded network weights from {}.'.format(
+                state_path
+            ))
+
+    def load_optimizer_state(self, state_name: str):
+        state_path = os.path.join(self.checkpoint_dir, 'optimizer', state_name)
+        self.optimizer.load_state_dict(torch.load(state_path))
+        if self.logger:
+            self.logger.info('Loaded optimizer state from {}.'.format(
+                state_path
+            ))
+
+    def load_lr_scheduler_state(self, state_name: str):
+        state_path = os.path.join(self.checkpoint_dir, 'lr_scheduler', state_name)
+        self.lr_scheduler.load_state_dict(torch.load(state_path))
+        if self.logger:
+            self.logger.info('Loaded lr_scheduler state from {}.'.format(
+                state_path
             ))
 
     def _set_optimizer(self):
@@ -94,15 +112,26 @@ class UWImgEnhanceModel(BaseModel):
             self.lambda_four * loss['four'] +\
             self.lambda_edge * loss['edge']
 
+    def _calculate_metrics(self, ref_imgs, pred_imgs, train=True):
+        metrics = self.train_metrics if train else self.val_metrics
+        metrics['psnr'] = psnr(pred_imgs, ref_imgs, 1.0)
+        metrics['ssim'] = ssim(pred_imgs, ref_imgs, 11).mean()
+
     def train(self, train_dl: DataLoader, val_dl: DataLoader):
         assert self.mode == 'train', f"The mode must be 'train', but got {self.mode}"
 
         if self.start_epoch > 0:
             load_prefix = self.cfg.get('load_prefix', None)
             if load_prefix:
-                self.load_weights(f'{load_prefix}_{self.start_epoch-1}.pth')
+                state_name = f'{load_prefix}_{self.start_epoch-1}.pth'
+                self.load_network_state(state_name)
+                self.load_optimizer_state(state_name)
+                self.load_lr_scheduler_state(state_name)
             else:
-                self.load_weights(f'weights_{self.start_epoch-1}.pth')
+                state_name = f'{self.start_epoch-1}.pth'
+                self.load_network_state(state_name)
+                self.load_optimizer_state(state_name)
+                self.load_lr_scheduler_state(state_name)
         iteration_index = self.start_iteration
         for epoch in range(self.start_epoch, self.start_epoch + self.num_epochs):
             for i, batch in enumerate(train_dl):
@@ -127,7 +156,9 @@ class UWImgEnhanceModel(BaseModel):
             self.adjust_lr()
             # save model weights
             if (epoch % self.ckpt_interval == 0) or (epoch == self.start_epoch + self.num_epochs-1):
-                self.save_model_weights(epoch)
+                self.save_network_weights(epoch)
+                self.save_optimizer_state(epoch)
+                self.save_lr_scheduler_state(epoch)
 
     def train_one_batch(self, input_: Dict):
         inp_imgs = input_['inp'].to(self.device)
@@ -138,8 +169,7 @@ class UWImgEnhanceModel(BaseModel):
         self._calculate_loss(ref_imgs, pred_imgs)
         self.train_loss['total'].backward()
         self.optimizer.step()
-        self.train_metrics['psnr'] = psnr(pred_imgs, ref_imgs, 1.0)
-        self.train_metrics['ssim'] = ssim(pred_imgs, ref_imgs, 11).mean()
+        self._calculate_metrics(ref_imgs, pred_imgs)
     
     def adjust_lr(self):
         if self.lr_scheduler is not None:
@@ -161,18 +191,46 @@ class UWImgEnhanceModel(BaseModel):
                                        },
                                        iteration)
     
-    def save_model_weights(self, epoch: int):
+    def save_network_weights(self, epoch: int):
         load_prefix = self.cfg.get('load_prefix', None)
         save_prefix = self.cfg.get('save_prefix', None)
         if not save_prefix:
             save_prefix = load_prefix
         if save_prefix:
-            saved_path = os.path.join(self.checkpoint_dir, "{}_{:d}.pth".format(save_prefix, epoch))
+            saved_path = os.path.join(self.checkpoint_dir, 'network', "{}_{:d}.pth".format(save_prefix, epoch))
         else:
-            saved_path = os.path.join(self.checkpoint_dir, "weights_{:d}.pth".format(epoch))
+            saved_path = os.path.join(self.checkpoint_dir, 'network', "{:d}.pth".format(epoch))
         torch.save(self.network.state_dict(), saved_path)
         if self.logger:
-            self.logger.info("Saved model weights into {}".format(saved_path))
+            self.logger.info("Saved network weights into {}".format(saved_path))
+
+    def save_optimizer_state(self, epoch: int):
+        load_prefix = self.cfg.get('load_prefix', None)
+        save_prefix = self.cfg.get('save_prefix', None)
+        if not save_prefix:
+            save_prefix = load_prefix
+        if save_prefix:
+            saved_path = os.path.join(self.checkpoint_dir, 'optimizer', "{}_{:d}.pth".format(save_prefix, epoch))
+        else:
+            saved_path = os.path.join(self.checkpoint_dir, 'optimizer', "{:d}.pth".format(epoch))
+        torch.save(self.optimizer.state_dict(), saved_path)
+        if self.logger:
+            self.logger.info("Saved optimizer state into {}".format(saved_path))
+
+    def save_lr_scheduler_state(self, epoch: int):
+        if not self.lr_scheduler:
+            return
+        load_prefix = self.cfg.get('load_prefix', None)
+        save_prefix = self.cfg.get('save_prefix', None)
+        if not save_prefix:
+            save_prefix = load_prefix
+        if save_prefix:
+            saved_path = os.path.join(self.checkpoint_dir, 'lr_scheduler', "{}_{:d}.pth".format(save_prefix, epoch))
+        else:
+            saved_path = os.path.join(self.checkpoint_dir, 'lr_scheduler', "{:d}.pth".format(epoch))
+        torch.save(self.lr_scheduler.state_dict(), saved_path)
+        if self.logger:
+            self.logger.info("Saved lr_shceduler state into {}".format(saved_path))
 
     def validate_one_batch(self, input_: Dict, iteration):
         inp_imgs = input_['inp'].to(self.device)
@@ -192,8 +250,8 @@ class UWImgEnhanceModel(BaseModel):
     def test(self, test_dl: DataLoader, epoch: int, test_name: str, load_prefix='weights'):
         assert self.mode == 'test', f"The mode must be 'test', but got {self.mode}"
         
-        weights_name = f"{load_prefix}_{epoch}"
-        self.load_weights(f"{weights_name}.pth")
+        weights_name = f"{load_prefix}_{epoch}" if load_prefix else f"{epoch}"
+        self.load_network_state(f"{weights_name}.pth")
         result_dir = os.path.join(self.result_dir, test_name, weights_name)
         if os.path.exists(result_dir):
             shutil.rmtree(result_dir)
