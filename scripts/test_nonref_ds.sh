@@ -16,7 +16,7 @@ then
     echo -e "1) model_v"
     echo -e "2) net_cfg"
     echo -e "3) name"
-    echo -e "4) epoch"
+    echo -e "4) epochs"
     echo -e "5) load_prefix"
     echo -e "for example: \"${BOLD_GREEN}bash ${0} uie configs/network/erd_15blocks_2down.yaml pretrained 299 weights${ENDSTYLE}\""
     exit -1
@@ -27,6 +27,8 @@ name=${3}
 epoch=${4}
 load_prefix=${5}
 
+epochs=$(echo ${raw_epochs} | tr ',' ' ')
+
 for ds_name in ${!ds_dict[@]};
 do
     python ./test_${model_v}.py \
@@ -34,6 +36,6 @@ do
     --net_cfg ${net_cfg} \
     --name ${name} \
     --test_name ${ds_name} \
-    --epoch ${epoch} \
+    --epoch ${epochs} \
     --load_prefix ${load_prefix}
 done
